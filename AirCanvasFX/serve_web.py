@@ -1,5 +1,5 @@
 """
-DoodleLens Web Server
+DoodleLens Web Server Launcher
 Serves the web studio locally on http://localhost:8000 and opens the browser.
 """
 
@@ -17,7 +17,8 @@ if sys.platform == "win32":
         pass
 
 PORT = 8000
-WEB_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+WEB_DIR = os.path.join(BASE_DIR, "web")
 os.chdir(WEB_DIR)
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):

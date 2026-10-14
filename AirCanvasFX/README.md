@@ -67,8 +67,7 @@ DoodleLens also includes an in-browser Web Studio powered by MediaPipe JS:
 
 ### Run Locally:
 ```batch
-cd web
-python serve.py
+python serve_web.py
 ```
 This serves the application locally at `http://localhost:8000` and automatically opens your browser.
 

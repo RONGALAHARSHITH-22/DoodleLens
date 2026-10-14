@@ -1,8 +1,5 @@
 {
-  "version": 2,
-  "name": "doodlelens",
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/AirCanvasFX/web/$1" }
-  ]
+  "buildCommand": null,
+  "outputDirectory": "AirCanvasFX/web",
+  "cleanUrls": true
 }
