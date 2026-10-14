@@ -61,6 +61,34 @@ python main.py
 
 ---
 
+## 🌐 Running on Web & Vercel
+
+DoodleLens also includes an in-browser Web Studio powered by MediaPipe JS:
+
+### Run Locally:
+```batch
+cd web
+python serve.py
+```
+This serves the application locally at `http://localhost:8000` and automatically opens your browser.
+
+### Deploy to Vercel:
+The repository includes a pre-configured `vercel.json`. Connect this GitHub repository on [vercel.com](https://vercel.com) and click **Deploy**.
+
+---
+
+## 📦 Building Standalone Windows Executable (.exe)
+
+To bundle DoodleLens into a standalone desktop application that runs without installing Python or dependencies:
+
+```batch
+pip install pyinstaller
+python -m PyInstaller DoodleLens.spec --noconfirm
+```
+The output executable will be created in `dist/DoodleLens/DoodleLens.exe`.
+
+---
+
 ## 🎮 How to Use
 
 ### Gesture Controls
