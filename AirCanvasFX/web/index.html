@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✨ DoodleLens — AI Air Drawing & AR Face Filter Studio</title>
+  <link rel="icon" type="image/png" href="../assets/icons/app_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+
+  <!-- MediaPipe CDN dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Cyberpunk Navbar -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand">
+          <span class="brand-sparkle">✨</span>
+          <span class="brand-name">Doodle<span class="brand-accent">Lens</span></span>
+          <span class="brand-badge">WEB FX</span>
+        </div>
+        <div class="status-indicator" id="cam-status-pill">
+          <span class="status-dot" id="status-dot"></span>
+          <span class="status-text" id="status-text">Camera Off</span>
+        </div>
+        <div class="hud-pill" id="fps-pill">
+          <span class="pill-label">FPS:</span>
+          <span class="pill-value" id="fps-counter">0</span>
+        </div>
+        <div class="hud-pill" id="gesture-pill">
+          <span class="pill-label">GESTURE:</span>
+          <span class="pill-value" id="current-gesture">None</span>
+        </div>
+      </div>
+
+      <nav class="nav-center">
+        <button class="nav-tab active" data-tab="drawing" id="tab-drawing">
+          <span class="tab-icon">✏️</span> Air Drawing
+        </button>
+        <button class="nav-tab" data-tab="filter" id="tab-filter">
+          <span class="tab-icon">🎭</span> Face Filters
+        </button>
+        <button class="nav-tab" data-tab="creator" id="tab-creator">
+          <span class="tab-icon">🎨</span> Filter Studio
+        </button>
+      </nav>
+
+      <div class="nav-right">
+        <button class="btn btn-icon" id="btn-snapshot" title="Take Screenshot (Thumbs Up 👍 / Ctrl+Shift+S)">
+          📷 <span class="btn-text">Snap</span>
+        </button>
+        <button class="btn btn-icon" id="btn-guide" title="Gestures & Shortcuts Guide (?)">
+          ❓ <span class="btn-text">Help</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <main class="workspace">
+      <!-- Left Tool Panel: Drawing Brushes & Palettes -->
+      <aside class="panel left-panel" id="drawing-panel">
+        <div class="panel-header">
+          <h3>🖌️ Creative Brushes</h3>
+        </div>
+        
+        <div class="panel-section">
+          <label class="control-label">Brush Type</label>
+          <div class="brush-grid">
+            <button class="brush-btn active" data-brush="neon" title="Neon Glow">✨ Neon</button>
+            <button class="brush-btn" data-brush="rainbow" title="Prism Rainbow">🌈 Rainbow</button>
+            <button class="brush-btn" data-brush="fire" title="Blazing Fire">🔥 Fire</button>
+            <button class="brush-btn" data-brush="electric" title="Electric Lightning">⚡ Electric</button>
+            <button class="brush-btn" data-brush="sparkle" title="Star Sparkles">⭐ Sparkle</button>
+            <button class="brush-btn" data-brush="calligraphy" title="Calligraphy">✒️ Ribbon</button>
+            <button class="brush-btn" data-brush="dots" title="Dot Matrix">🫧 Dots</button>
+            <button class="brush-btn" data-brush="classic" title="Classic Solid">🖊️ Solid</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <label class="control-label">Vibrant Colors</label>
+          <div class="color-palette">
+            <button class="color-swatch active" style="--c: #00f0ff;" data-color="#00f0ff" title="Neon Cyan"></button>
+            <button class="color-swatch" style="--c: #a855f7;" data-color="#a855f7" title="Electric Purple"></button>
+            <button class="color-swatch" style="--c: #ec4899;" data-color="#ec4899" title="Neon Pink"></button>
+            <button class="color-swatch" style="--c: #10b981;" data-color="#10b981" title="Emerald Green"></button>
+            <button class="color-swatch" style="--c: #eab308;" data-color="#eab308" title="Cyber Yellow"></button>
+            <button class="color-swatch" style="--c: #ef4444;" data-color="#ef4444" title="Flame Red"></button>
+            <button class="color-swatch" style="--c: #ffffff;" data-color="#ffffff" title="Pure White"></button>
+            <label class="color-picker-label" title="Custom Color">
+              🎨
+              <input type="color" id="custom-color-input" value="#00f0ff">
+            </label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="slider-header">
+            <label class="control-label">Brush Size</label>
+            <span class="slider-value" id="size-val">12px</span>
+          </div>
+          <input type="range" id="brush-size" min="2" max="60" value="12" class="cyber-slider">
+          <div class="size-preview-wrapper">
+            <div class="size-preview" id="size-preview-dot"></div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="slider-header">
+            <label class="control-label">Glow Intensity</label>
+            <span class="slider-value" id="glow-val">80%</span>
+          </div>
+          <input type="range" id="glow-intensity" min="0" max="100" value="80" class="cyber-slider">
+        </div>
+
+        <div class="panel-section actions-grid">
+          <button class="btn btn-secondary" id="btn-undo" title="Undo (Ctrl+Z)">↩ Undo</button>
+          <button class="btn btn-secondary" id="btn-redo" title="Redo (Ctrl+Y)">↪ Redo</button>
+          <button class="btn btn-toggle" id="btn-eraser" title="Eraser (E)">🧹 Eraser</button>
+          <button class="btn btn-danger" id="btn-clear" title="Clear Canvas (✊ Fist / Del)">🗑️ Clear</button>
+        </div>
+      </aside>
+
+      <!-- Center Video Canvas Studio -->
+      <section class="canvas-viewport" id="canvas-viewport">
+        <!-- Hidden Video Source -->
+        <video id="webcam" playsinline muted autoplay></video>
+
+        <!-- Composite Display Stack -->
+        <canvas id="stage-canvas"></canvas>
+
+        <!-- Interactive Visual Guides and Overlays -->
+        <div class="gesture-indicator-badge" id="hud-gesture-badge">
+          <span class="gesture-icon" id="badge-icon">☝️</span>
+          <span class="gesture-name" id="badge-name">Point & Draw</span>
+        </div>
+
+        <div class="mode-tag" id="hud-mode-tag">✏️ DRAWING MODE</div>
+
+        <!-- Camera Off Empty State -->
+        <div class="cam-placeholder" id="cam-placeholder">
+          <div class="placeholder-glow"></div>
+          <div class="placeholder-content">
+            <div class="placeholder-icon">📷</div>
+            <h2>DoodleLens Web Studio</h2>
+            <p>Experience real-time AI air drawing and AR face filters directly in your browser.</p>
+            <button class="btn btn-primary btn-lg" id="btn-start-camera-hero">
+              ▶ Start Webcam
+            </button>
+            <p class="placeholder-hint">✋ No touch or mouse required — just wave your hands.</p>
+          </div>
+        </div>
+
+        <!-- Screen Flash for Snapshot -->
+        <div class="flash-overlay" id="flash-overlay"></div>
+      </section>
+
+      <!-- Right Tool Panel: AR Face Filters & Custom Filter Studio -->
+      <aside class="panel right-panel" id="filter-panel">
+        <!-- Sub-panel 1: Built-in AR Filters -->
+        <div class="sub-panel" id="sub-filters">
+          <div class="panel-header">
+            <h3>🎭 AR Face Filters</h3>
+          </div>
+
+          <div class="filter-grid">
+            <div class="filter-card active" data-filter="angel">
+              <div class="filter-icon">😇</div>
+              <div class="filter-name">Angel Halo</div>
+            </div>
+            <div class="filter-card" data-filter="demon">
+              <div class="filter-icon">😈</div>
+              <div class="filter-name">Cyber Devil</div>
+            </div>
+            <div class="filter-card" data-filter="crown">
+              <div class="filter-icon">👑</div>
+              <div class="filter-name">Royal Crown</div>
+            </div>
+            <div class="filter-card" data-filter="visor">
+              <div class="filter-icon">🕶️</div>
+              <div class="filter-name">HUD Visor</div>
+            </div>
+            <div class="filter-card" data-filter="catears">
+              <div class="filter-icon">🐱</div>
+              <div class="filter-name">Neon Neko</div>
+            </div>
+            <div class="filter-card" data-filter="galaxy">
+              <div class="filter-icon">🌌</div>
+              <div class="filter-name">Nebula Aura</div>
+            </div>
+            <div class="filter-card" data-filter="lightning">
+              <div class="filter-icon">⚡</div>
+              <div class="filter-name">Thunder God</div>
+            </div>
+            <div class="filter-card" data-filter="mask">
+              <div class="filter-icon">🎭</div>
+              <div class="filter-name">Neon Mask</div>
+            </div>
+            <div class="filter-card" data-filter="glasses">
+              <div class="filter-icon">👓</div>
+              <div class="filter-name">Hololens</div>
+            </div>
+            <div class="filter-card" data-filter="none">
+              <div class="filter-icon">🚫</div>
+              <div class="filter-name">None (Raw)</div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="slider-header">
+              <label class="control-label">Filter Scale / Opacity</label>
+              <span class="slider-value" id="filter-intensity-val">100%</span>
+            </div>
+            <input type="range" id="filter-intensity" min="10" max="150" value="100" class="cyber-slider">
+          </div>
+        </div>
+
+        <!-- Sub-panel 2: Convert Air Drawing into Custom AR Filter -->
+        <div class="sub-panel" id="sub-creator">
+          <div class="panel-header">
+            <h3>🎨 Filter Studio</h3>
+          </div>
+          <p class="panel-description">
+            Draw something in the air (e.g. glasses, horns, a moustache, or a crown) and convert it into a tracking face filter!
+          </p>
+
+          <div class="panel-section">
+            <label class="control-label">Anchor Location on Face</label>
+            <select id="anchor-select" class="cyber-select">
+              <option value="forehead">Forehead / Head Top</option>
+              <option value="eyes">Between Eyes / Nose Bridge</option>
+              <option value="nose">Nose Tip</option>
+              <option value="mouth">Mouth / Moustache</option>
+              <option value="above_head">Floating Above Head (Halo/Crown)</option>
+            </select>
+          </div>
+
+          <div class="panel-section">
+            <label class="control-label">Filter Name</label>
+            <input type="text" id="custom-filter-name" class="cyber-input" placeholder="e.g. My Cool Glasses">
+          </div>
+
+          <button class="btn btn-primary btn-block" id="btn-convert-filter">
+            ✨ Convert Drawing $\rightarrow$ Filter
+          </button>
+
+          <div class="panel-section">
+            <label class="control-label">My Custom Filters</label>
+            <div class="custom-filter-list" id="custom-filter-list">
+              <div class="empty-list-msg">No custom filters yet. Draw and convert one!</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Bottom Controls & Status Bar -->
+    <footer class="bottom-bar">
+      <div class="bottom-left">
+        <button class="btn btn-primary" id="btn-toggle-cam">
+          ▶ Start Camera
+        </button>
+        <button class="btn btn-secondary" id="btn-pause-cam">
+          ⏸ Pause
+        </button>
+        <button class="btn btn-secondary" id="btn-toggle-mode">
+          🎭 Switch to Filter Mode
+        </button>
+      </div>
+
+      <div class="bottom-center">
+        <label class="cyber-checkbox">
+          <input type="checkbox" id="chk-landmarks" checked>
+          <span class="checkmark"></span>
+          <span>Show Tracking Points</span>
+        </label>
+        <label class="cyber-checkbox">
+          <input type="checkbox" id="chk-shapes">
+          <span class="checkmark"></span>
+          <span>Auto-Snap Shapes</span>
+        </label>
+        <label class="cyber-checkbox">
+          <input type="checkbox" id="chk-mirror" checked>
+          <span class="checkmark"></span>
+          <span>Mirror Camera</span>
+        </label>
+      </div>
+
+      <div class="bottom-right">
+        <button class="btn btn-secondary" id="btn-download-art">
+          💾 Save Artwork
+        </button>
+      </div>
+    </footer>
+
+    <!-- Help Modal Dialog -->
+    <div class="modal-backdrop" id="modal-guide">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h2>✨ DoodleLens — Gestures & Controls Guide</h2>
+          <button class="modal-close" id="btn-close-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="guide-grid">
+            <div class="guide-card">
+              <div class="guide-icon">☝️</div>
+              <div class="guide-info">
+                <h4>Index Finger Up</h4>
+                <p>Move your hand to draw smoothly on screen with your chosen brush.</p>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">✋</div>
+              <div class="guide-info">
+                <h4>Open Palm</h4>
+                <p>Pauses drawing. Reposition your hand freely without leaving lines.</p>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">✊</div>
+              <div class="guide-info">
+                <h4>Closed Fist</h4>
+                <p>Quick wipe! Clears current canvas strokes instantly.</p>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">👍</div>
+              <div class="guide-info">
+                <h4>Thumbs Up</h4>
+                <p>Takes a screenshot snapshot and downloads the high-res image.</p>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">✌️</div>
+              <div class="guide-info">
+                <h4>Two Fingers (Peace)</h4>
+                <p>Quickly toggle between Air Drawing Mode and Face Filter Mode.</p>
+              </div>
+            </div>
+            <div class="guide-card">
+              <div class="guide-icon">⌨️</div>
+              <div class="guide-info">
+                <h4>Keyboard Hotkeys</h4>
+                <p><b>Space</b>: Start/Stop Camera • <b>Tab</b>: Toggle Mode • <b>Ctrl+Z</b>: Undo • <b>Del</b>: Clear</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="btn-got-it">Got it, let's create!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

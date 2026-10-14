@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QCheckBox, QFormLayout, QLineEdit,
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QImage, QPixmap, QColor, QKeySequence, QShortcut
+from PyQt6.QtGui import QImage, QPixmap, QColor, QKeySequence, QShortcut, QIcon
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.app import AppController, AppMode
@@ -260,6 +260,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.base_dir = base_dir
         self.setWindowTitle("DoodleLens — AI Drawing & Face Filter Studio")
+        icon_path = os.path.join(base_dir, "assets", "icons", "app_icon.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
         self.setMinimumSize(1280, 800)
         self.resize(1520, 950)
         self.setStyleSheet(STYLESHEET)
