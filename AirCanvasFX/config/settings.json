@@ -1,0 +1,45 @@
+{
+  "camera": {
+    "device_index": 0,
+    "width": 1280,
+    "height": 720,
+    "fps": 60
+  },
+  "tracking": {
+    "hand_detection_confidence": 0.7,
+    "hand_tracking_confidence": 0.5,
+    "face_detection_confidence": 0.5,
+    "face_tracking_confidence": 0.5,
+    "smoothing_factor": 0.4,
+    "max_hands": 1
+  },
+  "drawing": {
+    "default_brush": "neon_pen",
+    "default_color": [0, 255, 255],
+    "brush_size": 8,
+    "glow_intensity": 5,
+    "trail_length": 30,
+    "opacity": 1.0,
+    "particle_density": 10
+  },
+  "performance": {
+    "quality": "medium",
+    "max_particles": 200,
+    "process_every_n_frames": 1
+  },
+  "ui": {
+    "theme": "dark_neon",
+    "show_landmarks": false,
+    "show_fps": true,
+    "show_gesture_indicator": true
+  },
+  "gestures": {
+    "draw_gesture": "index_extended",
+    "pause_gesture": "open_palm",
+    "clear_gesture": "closed_fist",
+    "snapshot_gesture": "thumbs_up",
+    "mode_switch_gesture": "two_fingers",
+    "debounce_frames": 2,
+    "confidence_threshold": 0.5
+  }
+}
